@@ -1,0 +1,19 @@
+import 'package:flutter/material.dart';
+
+// 공용 애니메이션 duration/curve 상수. 게임마다 버튼 눌림, 화면 전환 느낌이
+// 달라지지 않도록 여기서 관리해서 가져다 쓴다.
+
+const Duration kPressDuration = Duration(milliseconds: 150); // 버튼 눌림 등 짧은 반응
+const Duration kDefaultDuration = Duration(milliseconds: 300); // 일반적인 전환
+const Duration kSlowDuration = Duration(milliseconds: 500); // 화면 전환 등 느린 애니메이션
+const Duration kRevealDuration = Duration(
+  milliseconds: 1400,
+); // 사다리처럼 여러 요소가 순차적으로 등장하는 연출 전체 길이
+const Duration kPathTraceDuration = Duration(
+  milliseconds: 1200,
+); // 경로를 따라 점(마커)이 이동하는 연출 전체 길이
+
+// 토스 특유의 탄성 있게 튀기는 느낌. Curves.easeOutBack은 목표값을 살짝
+// 넘어섰다가 되돌아오는 형태라 그 느낌을 잘 표현해준다.
+const Curve kBounceCurve = Curves.easeOutBack;
+const Curve kStandardCurve = Curves.easeInOut;
