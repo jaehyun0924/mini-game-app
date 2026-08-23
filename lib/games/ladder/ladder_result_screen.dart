@@ -30,7 +30,8 @@ class LadderResultScreen extends StatefulWidget {
 class _LadderResultScreenState extends State<LadderResultScreen> {
   late final LadderStructure _structure;
   // 위쪽 이름의 표시 순서. 사다리 구조(rungs)는 그대로 두고 이 목록만 섞기 때문에,
-  // 특정 세로선(column)이 어떤 결과로 이어지는지는 바뀌지 않는다.
+  // 재섞기를 하면 참가자가 다른 세로선(column) 자리에 서게 되어 결과가 바뀔 수 있다.
+  // (사다리 그림 자체는 항상 같은 물리적 위치에 그려지므로, 표시 순서 = 실제 열 번호)
   late List<String> _participantOrder;
   int? _selectedParticipant;
   int? _revealedColumn;
