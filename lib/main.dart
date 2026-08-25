@@ -27,17 +27,6 @@ class MyApp extends StatelessWidget {
           foregroundColor: kColorTextPrimary,
           elevation: 0,
         ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: kColorPrimary,
-            foregroundColor: Colors.white,
-            disabledBackgroundColor: kColorTextDisabled,
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(kRadiusMd),
-            ),
-          ),
-        ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: kColorSurface,

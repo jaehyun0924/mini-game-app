@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:mini_game_app/theme/page_transitions.dart';
 import 'package:mini_game_app/theme/spacing.dart';
 import 'package:mini_game_app/theme/text_styles.dart';
+import 'package:mini_game_app/widgets/primary_button.dart';
 
 import 'ladder_outcome.dart';
 import 'ladder_result_screen.dart';
@@ -80,7 +82,7 @@ class _LadderOutcomeScreenState extends State<LadderOutcomeScreen> {
     ];
     Navigator.push(
       context,
-      MaterialPageRoute(
+      AppPageRoute(
         builder: (context) => LadderResultScreen(
           participants: widget.participants,
           outcomes: outcomes,
@@ -137,7 +139,7 @@ class _LadderOutcomeScreenState extends State<LadderOutcomeScreen> {
             const SizedBox(height: kSpacingMd),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
+              child: PrimaryButton(
                 onPressed: _allFilled ? _submit : null,
                 child: const Text('사다리 만들기'),
               ),

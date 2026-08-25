@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mini_game_app/theme/colors.dart';
 import 'package:mini_game_app/theme/spacing.dart';
 import 'package:mini_game_app/theme/text_styles.dart';
+import 'package:mini_game_app/widgets/shrink_button.dart';
 
 import 'ladder_board.dart';
 import 'ladder_generator.dart';
@@ -75,10 +76,19 @@ class _LadderResultScreenState extends State<LadderResultScreen> {
       appBar: AppBar(
         title: const Text('사다리타기 결과'),
         actions: [
-          TextButton.icon(
+          ShrinkButton(
             onPressed: _shuffleParticipantOrder,
-            icon: const Icon(Icons.shuffle, color: kColorPrimary),
-            label: const Text('Random'),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: kSpacingSm),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.shuffle, color: kColorPrimary),
+                  SizedBox(width: kSpacingXs),
+                  Text('Random', style: TextStyle(color: kColorPrimary)),
+                ],
+              ),
+            ),
           ),
         ],
       ),

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:mini_game_app/theme/colors.dart';
+import 'package:mini_game_app/theme/page_transitions.dart';
 import 'package:mini_game_app/theme/spacing.dart';
 import 'package:mini_game_app/theme/text_styles.dart';
+import 'package:mini_game_app/widgets/primary_button.dart';
+import 'package:mini_game_app/widgets/shrink_button.dart';
 
 import 'ladder_constants.dart';
 import 'ladder_outcome_screen.dart';
@@ -89,10 +93,7 @@ class _LadderParticipantScreenState extends State<LadderParticipantScreen> {
                   ),
                 ),
                 const SizedBox(width: kSpacingSm),
-                ElevatedButton(
-                  onPressed: _addParticipant,
-                  child: const Text('추가'),
-                ),
+                PrimaryButton(onPressed: _addParticipant, child: const Text('추가')),
               ],
             ),
             const SizedBox(height: kSpacingMd),
@@ -104,9 +105,15 @@ class _LadderParticipantScreenState extends State<LadderParticipantScreen> {
                       itemBuilder: (context, index) {
                         return ListTile(
                           title: Text(_participants[index]),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.delete_outline),
+                          trailing: ShrinkButton(
                             onPressed: () => _removeParticipant(index),
+                            child: const Padding(
+                              padding: EdgeInsets.all(kSpacingSm),
+                              child: Icon(
+                                Icons.delete_outline,
+                                color: kColorTextSecondary,
+                              ),
+                            ),
                           ),
                         );
                       },
@@ -115,12 +122,12 @@ class _LadderParticipantScreenState extends State<LadderParticipantScreen> {
             const SizedBox(height: kSpacingMd),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
+              child: PrimaryButton(
                 onPressed: _participants.length >= kMinParticipants
                     ? () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
+                          AppPageRoute(
                             builder: (context) =>
                                 LadderOutcomeScreen(participants: _participants),
                           ),

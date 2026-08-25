@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mini_game_app/games/ladder/ladder_participant_screen.dart';
+import 'package:mini_game_app/theme/page_transitions.dart';
+import 'package:mini_game_app/widgets/primary_button.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -9,11 +11,11 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('미니게임')),
       body: Center(
-        child: ElevatedButton(
+        child: PrimaryButton(
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
+              AppPageRoute(
                 builder: (context) => const LadderParticipantScreen(),
               ),
             );

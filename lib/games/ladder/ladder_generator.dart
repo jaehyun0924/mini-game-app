@@ -146,11 +146,14 @@ class LadderGenerator {
     return points;
   }
 
-  /// 모든 구간(gap)에 다리를 정확히 하나씩 심는다. gap번째 다리는 (gap % rowCount)행에
-  /// 놓는데, rowCount가 2 이상이면 인접한 두 gap은 항상 서로 다른 행에 놓이므로
-  /// (예: gap=3은 3행, gap=4는 4행) 같은 행에서 다리가 겹칠 걱정 없이 항상 안전하다.
-  /// 이렇게 하면 안쪽 열들은 양옆 gap에서 다리를 하나씩 받아 자동으로 2개가 되고,
-  /// 양 끝 열(첫 번째/마지막)만 다리가 1개뿐이라 _tryAddRung으로 하나씩 더 추가해준다.
+  /// 모든 구간(gap, 즉 세로열 쌍)에 다리를 최소 2개씩 심는다.
+  /// 1) 먼저 gap마다 하나씩: gap번째 다리는 (gap % rowCount)행에 놓는데, rowCount가
+  ///    2 이상이면 인접한 두 gap은 항상 서로 다른 행에 놓이므로(예: gap=3은 3행,
+  ///    gap=4는 4행) 같은 행에서 다리가 겹칠 걱정 없이 항상 안전하다.
+  /// 2) 그 다음 모든 gap에 대해 _tryAddRung으로 하나씩 더 추가해서 2개를 채운다.
+  ///    (예전에는 이 2단계를 양 끝 gap에만 해줬는데, 그러면 안쪽 gap은 1단계에서 받은
+  ///    1개뿐이고 그 이후는 _addRandomDensity의 확률(동전 던지기)에 맡겨져서 운이
+  ///    나쁘면 다리가 1개인 채로 남는 문제가 있었다.)
   static void _seedMinimumConnections(
     List<List<bool>> grid,
     int rowCount,
@@ -164,11 +167,8 @@ class LadderGenerator {
       grid[gap % rowCount][gap] = true;
     }
 
-    // 양 끝 열은 인접한 gap이 하나뿐이라 위 단계에서 다리를 1개만 받는다.
-    // 이 시점엔 그물이 아주 성겨서(gap마다 1개뿐) 빈 행을 찾는 데 실패할 일이 없다.
-    _tryAddRung(grid, rowCount, gapCount, 0, rng);
-    if (gapCount > 1) {
-      _tryAddRung(grid, rowCount, gapCount, gapCount - 1, rng);
+    for (var gap = 0; gap < gapCount; gap++) {
+      _tryAddRung(grid, rowCount, gapCount, gap, rng);
     }
   }
 
