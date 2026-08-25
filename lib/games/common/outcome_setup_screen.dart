@@ -1,23 +1,33 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:mini_game_app/models/game_outcome.dart';
+import 'package:mini_game_app/models/game_setup.dart';
 import 'package:mini_game_app/theme/page_transitions.dart';
 import 'package:mini_game_app/theme/spacing.dart';
 import 'package:mini_game_app/theme/text_styles.dart';
 import 'package:mini_game_app/widgets/primary_button.dart';
 
-import 'ladder_outcome.dart';
-import 'ladder_result_screen.dart';
+import '../mini_game.dart';
 
-/// 참가자 수만큼 도착 지점 결과(당첨/꽝/커피사기 등)를 입력받는 화면.
-class LadderOutcomeScreen extends StatefulWidget {
+/// 참가자 수만큼 결과 라벨(당첨/꽝/커피사기 등)을 입력받는 화면. 게임마다 다른
+/// 로직이 없어서 모든 게임이 공용으로 쓴다. 제출하면 game.computeResult로
+/// 결과를 계산하고 game.buildPlayScreen으로 넘어간다.
+class OutcomeSetupScreen extends StatefulWidget {
+  final MiniGame game;
   final List<String> participants;
 
-  const LadderOutcomeScreen({super.key, required this.participants});
+  const OutcomeSetupScreen({
+    super.key,
+    required this.game,
+    required this.participants,
+  });
 
   @override
-  State<LadderOutcomeScreen> createState() => _LadderOutcomeScreenState();
+  State<OutcomeSetupScreen> createState() => _OutcomeSetupScreenState();
 }
 
-class _LadderOutcomeScreenState extends State<LadderOutcomeScreen> {
+class _OutcomeSetupScreenState extends State<OutcomeSetupScreen> {
   static const String _defaultLabel = '통과';
 
   late final List<TextEditingController> _controllers;
@@ -35,7 +45,7 @@ class _LadderOutcomeScreenState extends State<LadderOutcomeScreen> {
       for (var i = 0; i < widget.participants.length; i++) FocusNode(),
     ];
     _isSpecial = List<bool>.filled(widget.participants.length, false);
-    // 입력 상태에 따라 "사다리 만들기" 버튼 활성화 여부를 바로 갱신하기 위해 구독한다.
+    // 입력 상태에 따라 "게임 시작" 버튼 활성화 여부를 바로 갱신하기 위해 구독한다.
     for (final controller in _controllers) {
       controller.addListener(_onTextChanged);
     }
@@ -75,18 +85,21 @@ class _LadderOutcomeScreenState extends State<LadderOutcomeScreen> {
   void _submit() {
     final outcomes = [
       for (var i = 0; i < _controllers.length; i++)
-        LadderOutcome(
+        GameOutcome(
           label: _controllers[i].text.trim(),
           isSpecial: _isSpecial[i],
         ),
     ];
+    final setup = GameSetup(
+      participants: widget.participants,
+      outcomes: outcomes,
+    );
+    final result = widget.game.computeResult(setup, Random());
     Navigator.push(
       context,
       AppPageRoute(
-        builder: (context) => LadderResultScreen(
-          participants: widget.participants,
-          outcomes: outcomes,
-        ),
+        builder: (context) =>
+            widget.game.buildPlayScreen(context, setup, result),
       ),
     );
   }
@@ -141,7 +154,7 @@ class _LadderOutcomeScreenState extends State<LadderOutcomeScreen> {
               width: double.infinity,
               child: PrimaryButton(
                 onPressed: _allFilled ? _submit : null,
-                child: const Text('사다리 만들기'),
+                child: const Text('게임 시작'),
               ),
             ),
           ],

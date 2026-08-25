@@ -1,27 +1,31 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:mini_game_app/models/game_outcome.dart';
 import 'package:mini_game_app/theme/colors.dart';
 import 'package:mini_game_app/theme/spacing.dart';
-import 'package:mini_game_app/theme/text_styles.dart';
+import 'package:mini_game_app/widgets/game_result_card.dart';
+import 'package:mini_game_app/widgets/label_row.dart';
 import 'package:mini_game_app/widgets/shrink_button.dart';
 
 import 'ladder_board.dart';
 import 'ladder_generator.dart';
-import 'ladder_outcome.dart';
 import 'ladder_path_overlay.dart';
-import 'ladder_result_card.dart';
 
-/// 참가자 목록과 결과 목록을 받아 사다리를 생성하고, 참가자를 선택하면
-/// 경로를 따라가다가 도착 지점에서 결과 카드를 보여주는 화면.
+/// 참가자 목록과 결과 목록, 그리고 이미 계산된 사다리 구조(structure)를 받아
+/// 참가자를 선택하면 경로를 따라가다가 도착 지점에서 결과 카드를 보여주는 화면.
+/// 사다리 구조 자체는 LadderMiniGame.computeResult에서 계산해서 넘겨받는다 —
+/// 이 화면은 순수하게 애니메이션과 reveal만 담당한다.
 class LadderResultScreen extends StatefulWidget {
   final List<String> participants;
-  final List<LadderOutcome> outcomes;
+  final List<GameOutcome> outcomes;
+  final LadderStructure structure;
 
   const LadderResultScreen({
     super.key,
     required this.participants,
     required this.outcomes,
+    required this.structure,
   });
 
   @override
@@ -29,7 +33,6 @@ class LadderResultScreen extends StatefulWidget {
 }
 
 class _LadderResultScreenState extends State<LadderResultScreen> {
-  late final LadderStructure _structure;
   // 위쪽 이름의 표시 순서. 사다리 구조(rungs)는 그대로 두고 이 목록만 섞기 때문에,
   // 재섞기를 하면 참가자가 다른 세로선(column) 자리에 서게 되어 결과가 바뀔 수 있다.
   // (사다리 그림 자체는 항상 같은 물리적 위치에 그려지므로, 표시 순서 = 실제 열 번호)
@@ -40,10 +43,6 @@ class _LadderResultScreenState extends State<LadderResultScreen> {
   @override
   void initState() {
     super.initState();
-    // 화면이 다시 그려져도(setState 등) 사다리가 매번 바뀌지 않도록 initState에서 한 번만 생성한다.
-    _structure = LadderGenerator.generate(
-      participantCount: widget.participants.length,
-    );
     _participantOrder = List.of(widget.participants);
   }
 
@@ -58,7 +57,7 @@ class _LadderResultScreenState extends State<LadderResultScreen> {
     final selected = _selectedParticipant;
     if (selected == null) return;
     setState(() {
-      _revealedColumn = _structure.resultMapping[selected];
+      _revealedColumn = widget.structure.resultMapping[selected];
     });
   }
 
@@ -96,7 +95,7 @@ class _LadderResultScreenState extends State<LadderResultScreen> {
         padding: const EdgeInsets.all(kSpacingMd),
         child: Column(
           children: [
-            _LadderLabelRow(
+            LabelRow(
               labels: _participantOrder,
               selectedIndex: _selectedParticipant,
               onSelect: _selectParticipant,
@@ -105,9 +104,9 @@ class _LadderResultScreenState extends State<LadderResultScreen> {
             Expanded(
               child: Stack(
                 children: [
-                  LadderBoard(structure: _structure),
+                  LadderBoard(structure: widget.structure),
                   LadderPathOverlay(
-                    structure: _structure,
+                    structure: widget.structure,
                     selectedParticipant: _selectedParticipant,
                     onArrived: _handleArrived,
                   ),
@@ -120,7 +119,7 @@ class _LadderResultScreenState extends State<LadderResultScreen> {
                               child: Align(
                                 alignment: Alignment.bottomCenter,
                                 child: i == _revealedColumn
-                                    ? LadderResultCard(
+                                    ? GameResultCard(
                                         outcome: widget.outcomes[i],
                                       )
                                     : const SizedBox.shrink(),
@@ -134,49 +133,12 @@ class _LadderResultScreenState extends State<LadderResultScreen> {
               ),
             ),
             const SizedBox(height: kSpacingSm),
-            _LadderLabelRow(
+            LabelRow(
               labels: [for (final outcome in widget.outcomes) outcome.label],
             ),
           ],
         ),
       ),
-    );
-  }
-}
-
-class _LadderLabelRow extends StatelessWidget {
-  final List<String> labels;
-  final int? selectedIndex;
-  final ValueChanged<int>? onSelect;
-
-  const _LadderLabelRow({
-    required this.labels,
-    this.selectedIndex,
-    this.onSelect,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        for (var i = 0; i < labels.length; i++)
-          Expanded(
-            child: GestureDetector(
-              onTap: onSelect == null ? null : () => onSelect!(i),
-              child: Text(
-                labels[i],
-                style: i == selectedIndex
-                    ? kTextBody1.copyWith(
-                        color: kColorPrimary,
-                        fontWeight: FontWeight.w700,
-                      )
-                    : kTextBody1,
-                textAlign: TextAlign.center,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ),
-      ],
     );
   }
 }

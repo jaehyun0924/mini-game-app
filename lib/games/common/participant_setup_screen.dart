@@ -6,18 +6,22 @@ import 'package:mini_game_app/theme/text_styles.dart';
 import 'package:mini_game_app/widgets/primary_button.dart';
 import 'package:mini_game_app/widgets/shrink_button.dart';
 
-import 'ladder_constants.dart';
-import 'ladder_outcome_screen.dart';
+import '../mini_game.dart';
+import 'outcome_setup_screen.dart';
 
-class LadderParticipantScreen extends StatefulWidget {
-  const LadderParticipantScreen({super.key});
+/// 참가자 이름을 입력받는 화면. 게임마다 다른 로직이 없어서 모든 게임이
+/// 공용으로 쓴다 (MiniGame.minParticipants/maxParticipants만 게임별로 다름).
+class ParticipantSetupScreen extends StatefulWidget {
+  final MiniGame game;
+
+  const ParticipantSetupScreen({super.key, required this.game});
 
   @override
-  State<LadderParticipantScreen> createState() =>
-      _LadderParticipantScreenState();
+  State<ParticipantSetupScreen> createState() =>
+      _ParticipantSetupScreenState();
 }
 
-class _LadderParticipantScreenState extends State<LadderParticipantScreen> {
+class _ParticipantSetupScreenState extends State<ParticipantSetupScreen> {
   final TextEditingController _nameController = TextEditingController();
   final FocusNode _nameFocusNode = FocusNode();
   final List<String> _participants = [];
@@ -38,8 +42,10 @@ class _LadderParticipantScreenState extends State<LadderParticipantScreen> {
       _nameFocusNode.requestFocus();
       return;
     }
-    if (_participants.length >= kMaxParticipants) {
-      setState(() => _errorText = '최대 $kMaxParticipants명까지 추가할 수 있어요');
+    if (_participants.length >= widget.game.maxParticipants) {
+      setState(
+        () => _errorText = '최대 ${widget.game.maxParticipants}명까지 추가할 수 있어요',
+      );
       _nameFocusNode.requestFocus();
       return;
     }
@@ -74,7 +80,8 @@ class _LadderParticipantScreenState extends State<LadderParticipantScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '참가자 ${_participants.length}명 (최소 $kMinParticipants명 · 최대 $kMaxParticipants명)',
+              '참가자 ${_participants.length}명 '
+              '(최소 ${widget.game.minParticipants}명 · 최대 ${widget.game.maxParticipants}명)',
               style: kTextBody2,
             ),
             const SizedBox(height: kSpacingSm),
@@ -123,18 +130,20 @@ class _LadderParticipantScreenState extends State<LadderParticipantScreen> {
             SizedBox(
               width: double.infinity,
               child: PrimaryButton(
-                onPressed: _participants.length >= kMinParticipants
+                onPressed: _participants.length >= widget.game.minParticipants
                     ? () {
                         Navigator.push(
                           context,
                           AppPageRoute(
-                            builder: (context) =>
-                                LadderOutcomeScreen(participants: _participants),
+                            builder: (context) => OutcomeSetupScreen(
+                              game: widget.game,
+                              participants: _participants,
+                            ),
                           ),
                         );
                       }
                     : null,
-                child: const Text('사다리 만들기'),
+                child: const Text('다음'),
               ),
             ),
           ],
