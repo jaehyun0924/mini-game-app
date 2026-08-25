@@ -15,6 +15,9 @@ const Duration kPathTraceDuration = Duration(
 const Duration kSpinDuration = Duration(
   milliseconds: 3200,
 ); // 룰렛처럼 여러 바퀴 돌다가 감속하며 멈추는 연출 전체 길이
+const Duration kShuffleDuration = Duration(
+  milliseconds: 1400,
+); // 제비뽑기/로또뽑기처럼 카드가 여러 번 자리를 바꾸며 섞이는 연출 전체 길이
 
 // 토스 특유의 탄성 있게 튀기는 느낌. Curves.easeOutBack은 목표값을 살짝
 // 넘어섰다가 되돌아오는 형태라 그 느낌을 잘 표현해준다.

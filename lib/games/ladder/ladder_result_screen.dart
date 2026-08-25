@@ -5,6 +5,7 @@ import 'package:mini_game_app/models/game_outcome.dart';
 import 'package:mini_game_app/theme/colors.dart';
 import 'package:mini_game_app/theme/spacing.dart';
 import 'package:mini_game_app/widgets/game_result_card.dart';
+import 'package:mini_game_app/widgets/home_button.dart';
 import 'package:mini_game_app/widgets/label_row.dart';
 import 'package:mini_game_app/widgets/shrink_button.dart';
 
@@ -89,6 +90,7 @@ class _LadderResultScreenState extends State<LadderResultScreen> {
               ),
             ),
           ),
+          const HomeButton(),
         ],
       ),
       body: Padding(

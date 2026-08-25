@@ -21,8 +21,7 @@ class HomeScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     AppPageRoute(
-                      builder: (context) =>
-                          ParticipantSetupScreen(game: game),
+                      builder: (context) => ParticipantSetupScreen(game: game),
                     ),
                   );
                 },

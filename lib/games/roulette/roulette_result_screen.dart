@@ -3,6 +3,7 @@ import 'package:mini_game_app/models/game_outcome.dart';
 import 'package:mini_game_app/theme/colors.dart';
 import 'package:mini_game_app/theme/spacing.dart';
 import 'package:mini_game_app/widgets/game_result_card.dart';
+import 'package:mini_game_app/widgets/home_button.dart';
 import 'package:mini_game_app/widgets/primary_button.dart';
 
 import 'roulette_wheel.dart';
@@ -40,7 +41,10 @@ class _RouletteResultScreenState extends State<RouletteResultScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('룰렛 결과')),
+      appBar: AppBar(
+        title: const Text('룰렛 결과'),
+        actions: const [HomeButton()],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(kSpacingMd),
         child: Column(
