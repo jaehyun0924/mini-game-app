@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:mini_game_app/models/game_outcome.dart';
 import 'package:mini_game_app/models/game_setup.dart';
@@ -11,8 +9,8 @@ import 'package:mini_game_app/widgets/primary_button.dart';
 import '../mini_game.dart';
 
 /// 참가자 수만큼 결과 라벨(당첨/꽝/커피사기 등)을 입력받는 화면. 게임마다 다른
-/// 로직이 없어서 모든 게임이 공용으로 쓴다. 제출하면 game.computeResult로
-/// 결과를 계산하고 game.buildPlayScreen으로 넘어간다.
+/// 로직이 없어서 모든 게임이 공용으로 쓴다. 제출하면 game.playScreen으로
+/// 넘어간다(내부에서 computeResult → buildPlayScreen을 이어서 호출).
 class OutcomeSetupScreen extends StatefulWidget {
   final MiniGame game;
   final List<String> participants;
@@ -94,12 +92,10 @@ class _OutcomeSetupScreenState extends State<OutcomeSetupScreen> {
       participants: widget.participants,
       outcomes: outcomes,
     );
-    final result = widget.game.computeResult(setup, Random());
     Navigator.push(
       context,
       AppPageRoute(
-        builder: (context) =>
-            widget.game.buildPlayScreen(context, setup, result),
+        builder: (context) => widget.game.playScreen(context, setup),
       ),
     );
   }

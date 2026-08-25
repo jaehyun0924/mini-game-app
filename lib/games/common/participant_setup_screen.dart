@@ -7,7 +7,6 @@ import 'package:mini_game_app/widgets/primary_button.dart';
 import 'package:mini_game_app/widgets/shrink_button.dart';
 
 import '../mini_game.dart';
-import 'outcome_setup_screen.dart';
 
 /// 참가자 이름을 입력받는 화면. 게임마다 다른 로직이 없어서 모든 게임이
 /// 공용으로 쓴다 (MiniGame.minParticipants/maxParticipants만 게임별로 다름).
@@ -135,10 +134,8 @@ class _ParticipantSetupScreenState extends State<ParticipantSetupScreen> {
                         Navigator.push(
                           context,
                           AppPageRoute(
-                            builder: (context) => OutcomeSetupScreen(
-                              game: widget.game,
-                              participants: _participants,
-                            ),
+                            builder: (context) => widget.game
+                                .buildAfterParticipants(context, _participants),
                           ),
                         );
                       }
