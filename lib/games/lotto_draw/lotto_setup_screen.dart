@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mini_game_app/models/game_outcome.dart';
 import 'package:mini_game_app/models/game_setup.dart';
 import 'package:mini_game_app/theme/page_transitions.dart';
 import 'package:mini_game_app/theme/spacing.dart';
@@ -31,15 +30,9 @@ class _LottoDrawSetupScreenState extends State<LottoDrawSetupScreen> {
   int _winnerCount = 1;
 
   void _submit() {
-    // outcomes 자체는 로또뽑기에서 라벨로 쓰이지 않는다 — 개수(길이)만
-    // "몇 명을 뽑을지"를 컴퓨트 단계에 전달하는 용도다.
-    final outcomes = List.generate(
-      _winnerCount,
-      (_) => const GameOutcome(label: '당첨', isSpecial: true),
-    );
     final setup = GameSetup(
       participants: widget.participants,
-      outcomes: outcomes,
+      pickCount: _winnerCount,
     );
     Navigator.push(
       context,

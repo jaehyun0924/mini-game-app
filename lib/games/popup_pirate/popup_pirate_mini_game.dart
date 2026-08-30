@@ -31,8 +31,7 @@ class PopupPirateMiniGame extends MiniGame<int> {
     BuildContext context,
     List<String> participants,
   ) {
-    final setup = GameSetup(participants: participants, outcomes: const []);
-    return playScreen(context, setup);
+    return playWithoutOutcomes(context, participants);
   }
 
   @override

@@ -11,8 +11,8 @@ import 'common/outcome_setup_screen.dart';
 /// 기본 구현은 공용 결과 라벨 입력 화면(OutcomeSetupScreen)으로 넘어가는
 /// 것 — 사다리타기처럼 참가자 수만큼 결과를 배정하는 게임에 맞는 흐름이다.
 /// 룰렛처럼 결과 라벨을 따로 입력받을 필요 없이 참가자 중 1명만 뽑으면
-/// 되는 게임은 이 메서드를 오버라이드해서 결과 입력 없이 바로 게임 화면으로
-/// 넘어가면 된다 (RouletteMiniGame 참고).
+/// 되는 게임은 이 메서드를 오버라이드해서 [playWithoutOutcomes]를 바로
+/// 호출하면 된다 (RouletteMiniGame 참고).
 ///
 /// [TResult]는 computeResult가 계산한 결과를 buildPlayScreen이 타입 안전하게
 /// 받기 위한 게임별 결과 타입이다 (예: 사다리타기는 LadderStructure).
@@ -37,6 +37,14 @@ abstract class MiniGame<TResult> {
   /// 참가자 입력이 끝난 뒤 이어질 화면. 기본값은 결과 라벨 입력 화면.
   Widget buildAfterParticipants(BuildContext context, List<String> participants) {
     return OutcomeSetupScreen(game: this, participants: participants);
+  }
+
+  /// buildAfterParticipants에서 결과 라벨 입력 없이 곧장 게임 화면으로 넘어가고
+  /// 싶을 때 쓰는 헬퍼. 룰렛, 통아저씨, 악어이빨처럼 참가자 중 하나(혹은 트리거
+  /// 위치)만 무작위로 뽑으면 끝나는 게임이 buildAfterParticipants를 오버라이드해서
+  /// 이 메서드 하나만 호출하면 된다.
+  Widget playWithoutOutcomes(BuildContext context, List<String> participants) {
+    return playScreen(context, GameSetup(participants: participants));
   }
 
   /// computeResult → buildPlayScreen을 이어서 실행하는 헬퍼. OutcomeSetupScreen과

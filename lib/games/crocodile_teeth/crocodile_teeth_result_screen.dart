@@ -58,7 +58,7 @@ class _CrocodileTeethResultScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('악어 이빨 누르기'),
+        title: const Text('악어 이빨 누르기 결과'),
         actions: const [HomeButton()],
       ),
       body: Padding(

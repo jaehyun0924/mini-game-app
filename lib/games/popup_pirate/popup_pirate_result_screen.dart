@@ -78,7 +78,7 @@ class _PopupPirateResultScreenState extends State<PopupPirateResultScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('통아저씨'),
+        title: const Text('통아저씨 결과'),
         actions: const [HomeButton()],
       ),
       body: Padding(
