@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:mini_game_app/models/game_outcome.dart';
 import 'package:mini_game_app/models/game_setup.dart';
 
+import '../common/winner_count_setup_screen.dart';
 import '../mini_game.dart';
 import 'straw_draw_constants.dart';
 import 'straw_draw_result_screen.dart';
-import 'straw_draw_setup_screen.dart';
 
 /// 제비뽑기를 MiniGame 인터페이스로 감싼 구현체. 참가자 수만큼 막대를 놓고
 /// 그 중 당첨 인원 수만큼 "당첨" 결과를 참가자 순서와 무관하게 무작위
@@ -32,7 +32,22 @@ class StrawDrawMiniGame extends MiniGame<List<GameOutcome>> {
     BuildContext context,
     List<String> participants,
   ) {
-    return StrawDrawSetupScreen(game: this, participants: participants);
+    return WinnerCountSetupScreen(
+      game: this,
+      participants: participants,
+      question: '참가자 ${participants.length}명 중 몇 명이 당첨될까요?',
+      submitLabel: '제비뽑기 시작',
+      buildSetup: (participants, winnerCount) {
+        final outcomes = [
+          for (var i = 0; i < participants.length; i++)
+            GameOutcome(
+              label: i < winnerCount ? '당첨' : '통과',
+              isSpecial: i < winnerCount,
+            ),
+        ];
+        return GameSetup(participants: participants, outcomes: outcomes);
+      },
+    );
   }
 
   @override

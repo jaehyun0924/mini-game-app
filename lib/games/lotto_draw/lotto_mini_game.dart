@@ -3,10 +3,10 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:mini_game_app/models/game_setup.dart';
 
+import '../common/winner_count_setup_screen.dart';
 import '../mini_game.dart';
 import 'lotto_constants.dart';
 import 'lotto_result_screen.dart';
-import 'lotto_setup_screen.dart';
 
 /// 로또뽑기를 MiniGame 인터페이스로 감싼 구현체. 참가자 전원을 공 뽑기
 /// 기계에 넣어두고, 그 중 당첨 인원 수(setup.pickCount)만큼을 무작위 순서로
@@ -32,7 +32,14 @@ class LottoDrawMiniGame extends MiniGame<List<String>> {
     BuildContext context,
     List<String> participants,
   ) {
-    return LottoDrawSetupScreen(game: this, participants: participants);
+    return WinnerCountSetupScreen(
+      game: this,
+      participants: participants,
+      question: '참가자 ${participants.length}명 중 몇 명을 뽑을까요?',
+      submitLabel: '공 뽑기 시작',
+      buildSetup: (participants, winnerCount) =>
+          GameSetup(participants: participants, pickCount: winnerCount),
+    );
   }
 
   @override
