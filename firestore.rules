@@ -1,0 +1,16 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 피드백 폼: 누구나 제출(create)은 가능하지만, 남이 쓴 피드백을 읽거나
+    // 고치지는 못하게 막는다. 조회는 Firebase 콘솔에서 직접 한다.
+    match /feedback/{feedbackId} {
+      allow create: if true;
+      allow read, update, delete: if false;
+    }
+
+    // 그 외 컬렉션은 아직 쓰는 곳이 없으므로 기본적으로 전부 차단.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
