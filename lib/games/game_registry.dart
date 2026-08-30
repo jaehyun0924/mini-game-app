@@ -1,6 +1,7 @@
 import 'ladder/ladder_mini_game.dart';
 import 'lotto_draw/lotto_mini_game.dart';
 import 'mini_game.dart';
+import 'popup_pirate/popup_pirate_mini_game.dart';
 import 'roulette/roulette_mini_game.dart';
 import 'straw_draw/straw_draw_mini_game.dart';
 
@@ -11,4 +12,5 @@ final List<MiniGame> kAllGames = [
   RouletteMiniGame(),
   StrawDrawMiniGame(),
   LottoDrawMiniGame(),
+  PopupPirateMiniGame(),
 ];
