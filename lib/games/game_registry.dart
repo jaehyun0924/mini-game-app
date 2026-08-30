@@ -1,3 +1,4 @@
+import 'crocodile_teeth/crocodile_teeth_mini_game.dart';
 import 'ladder/ladder_mini_game.dart';
 import 'lotto_draw/lotto_mini_game.dart';
 import 'mini_game.dart';
@@ -13,4 +14,5 @@ final List<MiniGame> kAllGames = [
   StrawDrawMiniGame(),
   LottoDrawMiniGame(),
   PopupPirateMiniGame(),
+  CrocodileTeethMiniGame(),
 ];
