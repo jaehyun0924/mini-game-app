@@ -1,11 +1,58 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // 이 함수를 쓰는 곳(groups/sessions 규칙)에서는 groupId 문서가 이미 존재한다고
+    // 가정한다 — 그룹 생성(create) 자체는 request.resource.data로 별도 조건을 건다.
+    function isMember(groupId) {
+      return isSignedIn() &&
+        request.auth.uid in
+          get(/databases/$(database)/documents/groups/$(groupId)).data.memberIds;
+    }
+
     // 피드백 폼: 누구나 제출(create)은 가능하지만, 남이 쓴 피드백을 읽거나
     // 고치지는 못하게 막는다. 조회는 Firebase 콘솔에서 직접 한다.
     match /feedback/{feedbackId} {
       allow create: if true;
       allow read, update, delete: if false;
+    }
+
+    // 유저 프로필: 그룹 멤버 목록에 닉네임을 보여줘야 해서 로그인한 사람이면
+    // 누구나 읽을 수 있게 하고, 쓰기는 본인 uid 문서로만 제한한다.
+    match /users/{uid} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && request.auth.uid == uid;
+      allow delete: if false;
+    }
+
+    match /groups/{groupId} {
+      // 그룹 생성은 로그인한 사람이면 누구나 가능하되, 만드는 사람이 곧 owner이자
+      // 유일한 초기 멤버여야 한다.
+      allow create: if isSignedIn() &&
+        request.resource.data.ownerId == request.auth.uid &&
+        request.resource.data.memberIds == [request.auth.uid];
+
+      allow read, update: if isMember(groupId);
+      allow delete: if false;
+
+      match /sessions/{sessionId} {
+        // 기록은 남긴 뒤에 고치거나 지우지 않는다는 전제로 update/delete는 막아둔다.
+        allow read: if isMember(groupId);
+        allow create: if isMember(groupId) &&
+          request.resource.data.hostId == request.auth.uid;
+        allow update, delete: if false;
+      }
+    }
+
+    // 초대코드 -> groupId 매핑. 코드로 그룹을 찾는 조회가 잦으니 로그인한 사람은
+    // 누구나 읽을 수 있게 한다. 쓰기(그룹 생성과 동시에 코드도 만드는 것)는
+    // "그룹 만들기" 화면을 실제로 구현할 때 groups 생성 로직과 함께 다시 정한다.
+    match /inviteCodes/{code} {
+      allow read: if isSignedIn();
+      allow write: if false;
     }
 
     // 그 외 컬렉션은 아직 쓰는 곳이 없으므로 기본적으로 전부 차단.
