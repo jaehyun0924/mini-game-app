@@ -2,6 +2,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:mini_game_app/firebase_options.dart';
 import 'package:mini_game_app/screens/home_screen.dart';
+import 'package:mini_game_app/screens/nickname_setup_screen.dart';
+import 'package:mini_game_app/services/auth_service.dart';
+import 'package:mini_game_app/services/user_service.dart';
 import 'package:mini_game_app/theme/colors.dart';
 import 'package:mini_game_app/theme/radius.dart';
 
@@ -12,11 +15,19 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MyApp());
+
+  // 회원가입 화면 없이 바로 쓸 수 있게, 로그인 안 돼 있으면 익명 계정을 만들고
+  // 닉네임이 아직 없으면(최초 실행) 닉네임 입력 화면부터 보여준다.
+  await AuthService().ensureSignedIn();
+  final hasNickname = await UserService().hasNickname();
+
+  runApp(MyApp(startWithNicknameSetup: !hasNickname));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool startWithNicknameSetup;
+
+  const MyApp({super.key, required this.startWithNicknameSetup});
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +55,9 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const HomeScreen(),
+      home: startWithNicknameSetup
+          ? const NicknameSetupScreen()
+          : const HomeScreen(),
     );
   }
 }
