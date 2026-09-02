@@ -28,6 +28,16 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // 초대 코드로 참여: 아직 멤버가 아닌 사람이 자기 uid 하나만 memberIds 끝에
+    // 추가하는 경우만 허용한다. 다른 필드를 같이 바꾸거나 남을 추가/제거하는 건 막는다.
+    function isJoiningSelf() {
+      return isSignedIn() &&
+        !(request.auth.uid in resource.data.memberIds) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberIds']) &&
+        request.resource.data.memberIds ==
+          resource.data.memberIds.concat([request.auth.uid]);
+    }
+
     match /groups/{groupId} {
       // 그룹 생성은 로그인한 사람이면 누구나 가능하되, 만드는 사람이 곧 owner이자
       // 유일한 초기 멤버여야 한다.
@@ -35,7 +45,13 @@ service cloud.firestore {
         request.resource.data.ownerId == request.auth.uid &&
         request.resource.data.memberIds == [request.auth.uid];
 
-      allow read, update: if isMember(groupId);
+      // 아직 멤버가 아닌 사람도 "이미 가입된 그룹인지" 확인하려면 참여하기 전에
+      // 그룹 문서를 읽어야 한다. 그래서 읽기는 멤버 여부와 무관하게 로그인한
+      // 사람이면 누구나 가능하게 한다 — 그룹 이름/멤버 목록은 users 프로필
+      // 닉네임처럼 이미 로그인한 사람 전체에게 공개된 정보 수준이라 문제 없다
+      // (실제 게임 기록인 sessions는 그대로 멤버만 읽을 수 있게 막아둔다).
+      allow read: if isSignedIn();
+      allow update: if isMember(groupId) || isJoiningSelf();
       allow delete: if false;
 
       match /sessions/{sessionId} {
@@ -48,11 +64,20 @@ service cloud.firestore {
     }
 
     // 초대코드 -> groupId 매핑. 코드로 그룹을 찾는 조회가 잦으니 로그인한 사람은
-    // 누구나 읽을 수 있게 한다. 쓰기(그룹 생성과 동시에 코드도 만드는 것)는
-    // "그룹 만들기" 화면을 실제로 구현할 때 groups 생성 로직과 함께 다시 정한다.
+    // 누구나 읽을 수 있게 한다. 생성은 그룹 생성과 같은 batch로 같이 일어나므로,
+    // batch 안의 다른 쓰기(=groups 문서 생성)까지 반영된 상태로 규칙이 평가된다는
+    // 점을 이용해 "이 code가 가리키는 groupId가 지금 이 요청을 보낸 사람이 owner인
+    // 그룹이 맞는지"까지 확인한다. 이렇게 하면 남의 그룹에 엉뚱한 코드를 심는 걸
+    // 막을 수 있다. 코드 자체는 문서 ID라서 이미 존재하는 코드면 create가 아니라
+    // update로 취급돼 아래 조건과 무관하게 막힌다(코드 중복 방지).
     match /inviteCodes/{code} {
       allow read: if isSignedIn();
-      allow write: if false;
+      allow create: if isSignedIn() &&
+        request.resource.data.keys().hasOnly(['groupId']) &&
+        request.resource.data.groupId is string &&
+        get(/databases/$(database)/documents/groups/$(request.resource.data.groupId))
+          .data.ownerId == request.auth.uid;
+      allow update, delete: if false;
     }
 
     // 그 외 컬렉션은 아직 쓰는 곳이 없으므로 기본적으로 전부 차단.

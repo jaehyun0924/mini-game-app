@@ -23,4 +23,17 @@ class UserService {
       'createdAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
   }
+
+  /// 여러 uid의 닉네임을 한 번에 조회한다. 그룹 멤버 목록 표시용.
+  /// whereIn은 최대 30개까지만 되는데, 지금 규모(연구실 그룹)에서는 충분하다.
+  Future<Map<String, String>> getNicknames(List<String> uids) async {
+    if (uids.isEmpty) return {};
+    final snap = await _collection
+        .where(FieldPath.documentId, whereIn: uids)
+        .get();
+    return {
+      for (final doc in snap.docs)
+        doc.id: (doc.data()['nickname'] as String?) ?? '(이름 없음)',
+    };
+  }
 }
