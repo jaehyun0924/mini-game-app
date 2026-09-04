@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:mini_game_app/models/game_outcome.dart';
 import 'package:mini_game_app/models/game_setup.dart';
+import 'package:mini_game_app/models/session_result.dart';
 
 import '../common/winner_count_setup_screen.dart';
 import '../mini_game.dart';
@@ -30,13 +31,15 @@ class StrawDrawMiniGame extends MiniGame<List<GameOutcome>> {
   @override
   Widget buildAfterParticipants(
     BuildContext context,
-    List<String> participants,
-  ) {
+    List<String> participants, {
+    GameResultCallback? onResult,
+  }) {
     return WinnerCountSetupScreen(
       game: this,
       participants: participants,
       question: '참가자 ${participants.length}명 중 몇 명이 당첨될까요?',
       submitLabel: '제비뽑기 시작',
+      onResult: onResult,
       buildSetup: (participants, winnerCount) {
         final outcomes = [
           for (var i = 0; i < participants.length; i++)
@@ -59,11 +62,13 @@ class StrawDrawMiniGame extends MiniGame<List<GameOutcome>> {
   Widget buildPlayScreen(
     BuildContext context,
     GameSetup setup,
-    List<GameOutcome> result,
-  ) {
+    List<GameOutcome> result, {
+    GameResultCallback? onResult,
+  }) {
     return StrawDrawResultScreen(
       participants: setup.participants,
       outcomes: result,
+      onResult: onResult,
     );
   }
 }

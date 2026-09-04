@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:mini_game_app/models/game_setup.dart';
+import 'package:mini_game_app/models/session_result.dart';
 
 import '../mini_game.dart';
 import 'ladder_constants.dart';
@@ -35,12 +36,14 @@ class LadderMiniGame extends MiniGame<LadderStructure> {
   Widget buildPlayScreen(
     BuildContext context,
     GameSetup setup,
-    LadderStructure result,
-  ) {
+    LadderStructure result, {
+    GameResultCallback? onResult,
+  }) {
     return LadderResultScreen(
       participants: setup.participants,
       outcomes: setup.outcomes,
       structure: result,
+      onResult: onResult,
     );
   }
 }

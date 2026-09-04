@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mini_game_app/models/game_outcome.dart';
+import 'package:mini_game_app/models/session_result.dart';
 import 'package:mini_game_app/theme/spacing.dart';
 import 'package:mini_game_app/theme/text_styles.dart';
 import 'package:mini_game_app/widgets/game_result_card.dart';
@@ -7,6 +8,7 @@ import 'package:mini_game_app/widgets/home_button.dart';
 import 'package:mini_game_app/widgets/label_row.dart';
 import 'package:mini_game_app/widgets/primary_button.dart';
 
+import '../common/game_result_recorder.dart';
 import 'ball_jitter_cluster.dart';
 
 /// 이미 뽑혀서 순서가 정해진 당첨자 이름 목록(winners)과 전체 참가자 수를
@@ -18,11 +20,15 @@ import 'ball_jitter_cluster.dart';
 class LottoDrawResultScreen extends StatefulWidget {
   final List<String> winners;
   final int totalParticipants;
+  final List<String> participants;
+  final GameResultCallback? onResult;
 
   const LottoDrawResultScreen({
     super.key,
     required this.winners,
     required this.totalParticipants,
+    required this.participants,
+    this.onResult,
   });
 
   @override
@@ -37,6 +43,18 @@ class _LottoDrawResultScreenState extends State<LottoDrawResultScreen> {
   void _drawNext() {
     if (_isDone) return;
     setState(() => _drawnCount++);
+
+    if (_isDone) {
+      final winnerSet = widget.winners.toSet();
+      final outcomes = <String, GameOutcome>{
+        for (final participant in widget.participants)
+          participant: GameOutcome(
+            label: winnerSet.contains(participant) ? '당첨' : '통과',
+            isSpecial: winnerSet.contains(participant),
+          ),
+      };
+      recordGameResult(context, widget.onResult, SessionResult(outcomes));
+    }
   }
 
   @override

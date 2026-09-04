@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:mini_game_app/models/game_outcome.dart';
+import 'package:mini_game_app/models/session_result.dart';
 import 'package:mini_game_app/theme/colors.dart';
 import 'package:mini_game_app/theme/radius.dart';
 import 'package:mini_game_app/theme/spacing.dart';
 import 'package:mini_game_app/theme/text_styles.dart';
 import 'package:mini_game_app/widgets/home_button.dart';
 
+import '../common/game_result_recorder.dart';
 import '../common/shuffle_reveal_board.dart';
 
 /// 참가자 목록과, 이미 각 막대(화면상 물리적 위치)에 무작위로 배정된 결과
@@ -15,11 +17,13 @@ import '../common/shuffle_reveal_board.dart';
 class StrawDrawResultScreen extends StatefulWidget {
   final List<String> participants;
   final List<GameOutcome> outcomes;
+  final GameResultCallback? onResult;
 
   const StrawDrawResultScreen({
     super.key,
     required this.participants,
     required this.outcomes,
+    this.onResult,
   });
 
   @override
@@ -50,6 +54,25 @@ class _StrawDrawResultScreenState extends State<StrawDrawResultScreen> {
         _turn = widget.participants.length;
       }
     });
+
+    if (_isDone) {
+      // 당첨으로 조기 종료된 경우 끝까지 직접 뽑지 못한 참가자가 남을 수
+      // 있는데, 그 사람들은 실제로 어떤 막대를 뽑았는지가 없으므로 "통과"
+      // 계열 결과 중 하나로 채워 넣는다 (isSpecial 여부만 랭킹 집계에
+      // 쓰이므로 어떤 막대의 라벨이든 상관없다).
+      final fallback = widget.outcomes.firstWhere(
+        (o) => !o.isSpecial,
+        orElse: () => widget.outcomes.first,
+      );
+      final outcomes = <String, GameOutcome>{
+        for (final entry in _drawnBy.entries)
+          entry.value: widget.outcomes[entry.key],
+      };
+      for (final participant in widget.participants) {
+        outcomes.putIfAbsent(participant, () => fallback);
+      }
+      recordGameResult(context, widget.onResult, SessionResult(outcomes));
+    }
   }
 
   @override

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:mini_game_app/models/game_setup.dart';
+import 'package:mini_game_app/models/session_result.dart';
 
 import '../mini_game.dart';
 import 'crocodile_teeth_constants.dart';
@@ -28,9 +29,10 @@ class CrocodileTeethMiniGame extends MiniGame<int> {
   @override
   Widget buildAfterParticipants(
     BuildContext context,
-    List<String> participants,
-  ) {
-    return playWithoutOutcomes(context, participants);
+    List<String> participants, {
+    GameResultCallback? onResult,
+  }) {
+    return playWithoutOutcomes(context, participants, onResult: onResult);
   }
 
   @override
@@ -39,10 +41,16 @@ class CrocodileTeethMiniGame extends MiniGame<int> {
   }
 
   @override
-  Widget buildPlayScreen(BuildContext context, GameSetup setup, int result) {
+  Widget buildPlayScreen(
+    BuildContext context,
+    GameSetup setup,
+    int result, {
+    GameResultCallback? onResult,
+  }) {
     return CrocodileTeethResultScreen(
       participants: setup.participants,
       triggerIndex: result,
+      onResult: onResult,
     );
   }
 }

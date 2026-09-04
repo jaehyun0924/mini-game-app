@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:mini_game_app/models/group.dart';
+import 'package:mini_game_app/screens/group_game_select_screen.dart';
+import 'package:mini_game_app/screens/group_ranking_screen.dart';
+import 'package:mini_game_app/screens/my_stats_screen.dart';
 import 'package:mini_game_app/services/group_service.dart';
 import 'package:mini_game_app/services/user_service.dart';
 import 'package:mini_game_app/theme/colors.dart';
+import 'package:mini_game_app/theme/page_transitions.dart';
 import 'package:mini_game_app/theme/radius.dart';
 import 'package:mini_game_app/theme/spacing.dart';
 import 'package:mini_game_app/theme/text_styles.dart';
+import 'package:mini_game_app/widgets/primary_button.dart';
 
 /// 그룹 이름/초대 코드/멤버 목록을 보여준다. 그룹 문서를 실시간 구독해서
 /// 다른 사람이 참여하면 멤버 목록이 바로 갱신된다.
@@ -49,6 +54,49 @@ class GroupDetailScreen extends StatelessWidget {
                       letterSpacing: 4,
                     ),
                   ),
+                ),
+                const SizedBox(height: kSpacingLg),
+                Row(
+                  children: [
+                    Expanded(
+                      child: PrimaryButton(
+                        onPressed: () => Navigator.push(
+                          context,
+                          AppPageRoute(
+                            builder: (context) =>
+                                GroupGameSelectScreen(group: group),
+                          ),
+                        ),
+                        child: const Text('게임하기'),
+                      ),
+                    ),
+                    const SizedBox(width: kSpacingSm),
+                    Expanded(
+                      child: PrimaryButton(
+                        onPressed: () => Navigator.push(
+                          context,
+                          AppPageRoute(
+                            builder: (context) =>
+                                GroupRankingScreen(groupId: group.id),
+                          ),
+                        ),
+                        child: const Text('랭킹'),
+                      ),
+                    ),
+                    const SizedBox(width: kSpacingSm),
+                    Expanded(
+                      child: PrimaryButton(
+                        onPressed: () => Navigator.push(
+                          context,
+                          AppPageRoute(
+                            builder: (context) =>
+                                MyStatsScreen(groupId: group.id),
+                          ),
+                        ),
+                        child: const Text('내 통계'),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: kSpacingLg),
                 Text('멤버 ${group.memberIds.length}명', style: kTextBody2),

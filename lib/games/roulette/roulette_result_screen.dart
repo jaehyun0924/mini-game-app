@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:mini_game_app/models/game_outcome.dart';
+import 'package:mini_game_app/models/session_result.dart';
 import 'package:mini_game_app/theme/colors.dart';
 import 'package:mini_game_app/theme/spacing.dart';
 import 'package:mini_game_app/widgets/game_result_card.dart';
 import 'package:mini_game_app/widgets/home_button.dart';
 import 'package:mini_game_app/widgets/primary_button.dart';
 
+import '../common/game_result_recorder.dart';
 import 'roulette_wheel.dart';
 
 /// 참가자 목록과 이미 계산된 당첨자 인덱스(winningIndex)를 받아, "룰렛 돌리기"
@@ -15,11 +17,13 @@ import 'roulette_wheel.dart';
 class RouletteResultScreen extends StatefulWidget {
   final List<String> participants;
   final int winningIndex;
+  final GameResultCallback? onResult;
 
   const RouletteResultScreen({
     super.key,
     required this.participants,
     required this.winningIndex,
+    this.onResult,
   });
 
   @override
@@ -36,6 +40,15 @@ class _RouletteResultScreenState extends State<RouletteResultScreen> {
 
   void _handleSettled() {
     setState(() => _settled = true);
+
+    final outcomes = <String, GameOutcome>{
+      for (var i = 0; i < widget.participants.length; i++)
+        widget.participants[i]: GameOutcome(
+          label: i == widget.winningIndex ? '당첨' : '통과',
+          isSpecial: i == widget.winningIndex,
+        ),
+    };
+    recordGameResult(context, widget.onResult, SessionResult(outcomes));
   }
 
   @override

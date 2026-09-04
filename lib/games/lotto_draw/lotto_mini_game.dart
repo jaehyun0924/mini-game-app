@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:mini_game_app/models/game_setup.dart';
+import 'package:mini_game_app/models/session_result.dart';
 
 import '../common/winner_count_setup_screen.dart';
 import '../mini_game.dart';
@@ -30,13 +31,15 @@ class LottoDrawMiniGame extends MiniGame<List<String>> {
   @override
   Widget buildAfterParticipants(
     BuildContext context,
-    List<String> participants,
-  ) {
+    List<String> participants, {
+    GameResultCallback? onResult,
+  }) {
     return WinnerCountSetupScreen(
       game: this,
       participants: participants,
       question: '참가자 ${participants.length}명 중 몇 명을 뽑을까요?',
       submitLabel: '공 뽑기 시작',
+      onResult: onResult,
       buildSetup: (participants, winnerCount) =>
           GameSetup(participants: participants, pickCount: winnerCount),
     );
@@ -54,11 +57,14 @@ class LottoDrawMiniGame extends MiniGame<List<String>> {
   Widget buildPlayScreen(
     BuildContext context,
     GameSetup setup,
-    List<String> result,
-  ) {
+    List<String> result, {
+    GameResultCallback? onResult,
+  }) {
     return LottoDrawResultScreen(
       winners: result,
       totalParticipants: setup.participants.length,
+      participants: setup.participants,
+      onResult: onResult,
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mini_game_app/models/game_outcome.dart';
 import 'package:mini_game_app/models/game_setup.dart';
+import 'package:mini_game_app/models/session_result.dart';
 import 'package:mini_game_app/theme/page_transitions.dart';
 import 'package:mini_game_app/theme/spacing.dart';
 import 'package:mini_game_app/theme/text_styles.dart';
@@ -14,11 +15,13 @@ import '../mini_game.dart';
 class OutcomeSetupScreen extends StatefulWidget {
   final MiniGame game;
   final List<String> participants;
+  final GameResultCallback? onResult;
 
   const OutcomeSetupScreen({
     super.key,
     required this.game,
     required this.participants,
+    this.onResult,
   });
 
   @override
@@ -95,7 +98,11 @@ class _OutcomeSetupScreenState extends State<OutcomeSetupScreen> {
     Navigator.push(
       context,
       AppPageRoute(
-        builder: (context) => widget.game.playScreen(context, setup),
+        builder: (context) => widget.game.playScreen(
+          context,
+          setup,
+          onResult: widget.onResult,
+        ),
       ),
     );
   }

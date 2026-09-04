@@ -15,12 +15,19 @@ class UserService {
     return nickname != null && nickname.isNotEmpty;
   }
 
-  // 지금은 최초 닉네임 설정에서만 호출한다. 나중에 "닉네임 수정" 기능이 생기면
-  // createdAt이 매번 덮어써지지 않도록 별도 메서드로 분리해야 한다.
+  // 최초 닉네임 설정에서만 호출한다. 닉네임을 나중에 바꿀 때는 createdAt을
+  // 다시 덮어쓰지 않도록 updateNickname을 대신 쓴다.
   Future<void> saveNickname(String nickname) {
     return _collection.doc(_uid).set({
       'nickname': nickname,
       'createdAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
+
+  /// 내 정보 화면에서 닉네임을 수정할 때 쓴다. createdAt은 건드리지 않는다.
+  Future<void> updateNickname(String nickname) {
+    return _collection.doc(_uid).set({
+      'nickname': nickname,
     }, SetOptions(merge: true));
   }
 

@@ -19,9 +19,9 @@ groups/{groupId}
   - createdAt: timestamp
 
 groups/{groupId}/sessions/{sessionId}
-  - gameType: string          (예: "ladder", "roulette")
-  - participants: string[]    (그 판에 참여한 사람 이름 또는 uid)
-  - result: map                (게임별로 형태가 다른 결과 데이터)
+  - gameType: string          (MiniGame.id, 예: "ladder", "roulette")
+  - participants: string[]    (그 판에 참여한 사람 이름)
+  - result: map<string, map>  (참가자 이름 -> { label: string, isSpecial: bool })
   - hostId: string            (그 판을 실행한 사람의 uid)
   - createdAt: timestamp
 
@@ -71,7 +71,34 @@ inviteCodes/{code}
   `memberIds`에 자기 uid 하나만 추가하는 update는 허용한다. 다른 필드를 같이
   바꾸거나 남을 추가/제거하려는 요청은 막는다.
 
-## 지금은 안 정한 것
+## sessions.result 형태 (3단계에서 확정)
 
-- `sessions.result`의 구체적인 필드 형태 (게임마다 다를 수 있음) — 실제로 기록을
-  저장하는 코드를 짤 때 게임별로 정리
+`result`는 참가자 이름을 키로 하는 map이고, 값은 그 참가자가 받은 결과 하나
+(`GameOutcome`을 그대로 직렬화한 형태)다.
+
+```
+result: {
+  "김재현": { "label": "커피 사기", "isSpecial": true },
+  "이몽룡": { "label": "생존", "isSpecial": false }
+}
+```
+
+- `isSpecial`이 랭킹의 "승/패" 판정 기준이다 — true를 받은 참가자를 그 판의
+  "패"로, 나머지를 "승"으로 센다 (RankingEntry.winCount = playedCount - specialCount).
+- 사다리타기/제비뽑기처럼 참가자가 직접 결과 라벨을 입력하는 게임은 그 라벨을
+  그대로 쓰고, 룰렛/로또뽑기/통아저씨/악어이빨처럼 라벨 입력이 없는 게임은
+  "당첨"/"통과" 또는 "커피 사기"/"생존" 같은 고정 라벨을 각 결과 화면에서
+  붙인다.
+- 어느 시점에 결과가 "확정"되는지는 게임마다 다르다: 사다리타기/제비뽑기/
+  룰렛/로또뽑기는 컴퓨터가 이미 계산해둔 결과를 화면이 순서대로 보여주기만
+  하므로 그 reveal이 끝나는 시점에 기록하고, 통아저씨/악어이빨은 실제로
+  누가 트리거를 누르는지가 상호작용으로 정해지므로 트리거가 발동하는
+  시점에 기록한다.
+
+## 참가자 이름과 uid
+
+`participants`/`result`의 키는 uid가 아니라 게임 시작할 때 자유 입력한
+이름이다. 그룹원 개개인과 uid로 연결돼 있지 않으므로, "내 통계" 같은 화면은
+로그인한 사용자의 닉네임과 문자열이 같은 참가자 이름을 자신의 기록으로
+간주한다 — 그룹원들이 본인 닉네임을 그대로 입력해서 게임한다는 전제의 단순한
+방식이다.

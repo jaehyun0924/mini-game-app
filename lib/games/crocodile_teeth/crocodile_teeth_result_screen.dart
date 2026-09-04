@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mini_game_app/models/game_outcome.dart';
+import 'package:mini_game_app/models/session_result.dart';
 import 'package:mini_game_app/theme/colors.dart';
 import 'package:mini_game_app/theme/motion.dart';
 import 'package:mini_game_app/theme/radius.dart';
@@ -7,6 +9,7 @@ import 'package:mini_game_app/theme/spacing.dart';
 import 'package:mini_game_app/theme/text_styles.dart';
 import 'package:mini_game_app/widgets/home_button.dart';
 
+import '../common/game_result_recorder.dart';
 import '../common/turn_trigger_board.dart';
 import '../common/turn_trigger_controller.dart';
 import 'crocodile_teeth_constants.dart';
@@ -26,11 +29,13 @@ const Color _kGumColor = Color(0xFFB6E4B0);
 class CrocodileTeethResultScreen extends StatefulWidget {
   final List<String> participants;
   final int triggerIndex;
+  final GameResultCallback? onResult;
 
   const CrocodileTeethResultScreen({
     super.key,
     required this.participants,
     required this.triggerIndex,
+    this.onResult,
   });
 
   @override
@@ -51,6 +56,16 @@ class _CrocodileTeethResultScreenState
     if (isTrigger) {
       // 웹/데스크톱에서는 조용히 무시된다 (RouletteWheel의 haptic 처리와 동일한 방식).
       HapticFeedback.heavyImpact().catchError((_) {});
+
+      final triggeredBy = _controller.currentParticipant;
+      final outcomes = <String, GameOutcome>{
+        for (final participant in widget.participants)
+          participant: GameOutcome(
+            label: participant == triggeredBy ? '커피 사기' : '생존',
+            isSpecial: participant == triggeredBy,
+          ),
+      };
+      recordGameResult(context, widget.onResult, SessionResult(outcomes));
     }
   }
 

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:mini_game_app/models/game_outcome.dart';
+import 'package:mini_game_app/models/session_result.dart';
 import 'package:mini_game_app/theme/colors.dart';
 import 'package:mini_game_app/theme/spacing.dart';
 import 'package:mini_game_app/widgets/game_result_card.dart';
@@ -9,6 +10,7 @@ import 'package:mini_game_app/widgets/home_button.dart';
 import 'package:mini_game_app/widgets/label_row.dart';
 import 'package:mini_game_app/widgets/shrink_button.dart';
 
+import '../common/game_result_recorder.dart';
 import 'ladder_board.dart';
 import 'ladder_generator.dart';
 import 'ladder_path_overlay.dart';
@@ -21,12 +23,14 @@ class LadderResultScreen extends StatefulWidget {
   final List<String> participants;
   final List<GameOutcome> outcomes;
   final LadderStructure structure;
+  final GameResultCallback? onResult;
 
   const LadderResultScreen({
     super.key,
     required this.participants,
     required this.outcomes,
     required this.structure,
+    this.onResult,
   });
 
   @override
@@ -40,6 +44,11 @@ class _LadderResultScreenState extends State<LadderResultScreen> {
   late List<String> _participantOrder;
   int? _selectedParticipant;
   int? _revealedColumn;
+  // 사다리 결과는 참가자가 첫 번째로 경로를 확인하는 순간 실질적으로 "정해진다"
+  // (그 이후에도 계속 Random 버튼으로 자리를 바꿀 수는 있지만, 실제 사용
+  // 흐름은 자리를 다 정하고 나서 순서대로 확인하는 식이라 첫 확인 시점의
+  // 좌석 배치를 그 판의 결과로 기록한다). 두 번 기록되지 않도록 막는 플래그.
+  bool _resultRecorded = false;
 
   @override
   void initState() {
@@ -60,6 +69,15 @@ class _LadderResultScreenState extends State<LadderResultScreen> {
     setState(() {
       _revealedColumn = widget.structure.resultMapping[selected];
     });
+
+    if (!_resultRecorded) {
+      _resultRecorded = true;
+      final outcomes = <String, GameOutcome>{
+        for (var i = 0; i < _participantOrder.length; i++)
+          _participantOrder[i]: widget.outcomes[widget.structure.resultMapping[i]],
+      };
+      recordGameResult(context, widget.onResult, SessionResult(outcomes));
+    }
   }
 
   void _shuffleParticipantOrder() {

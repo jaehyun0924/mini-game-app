@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mini_game_app/models/game_setup.dart';
+import 'package:mini_game_app/models/session_result.dart';
 import 'package:mini_game_app/theme/page_transitions.dart';
 import 'package:mini_game_app/theme/spacing.dart';
 import 'package:mini_game_app/theme/text_styles.dart';
@@ -19,6 +20,7 @@ class WinnerCountSetupScreen extends StatefulWidget {
   final String submitLabel;
   final GameSetup Function(List<String> participants, int winnerCount)
   buildSetup;
+  final GameResultCallback? onResult;
 
   const WinnerCountSetupScreen({
     super.key,
@@ -27,6 +29,7 @@ class WinnerCountSetupScreen extends StatefulWidget {
     required this.question,
     required this.submitLabel,
     required this.buildSetup,
+    this.onResult,
   });
 
   @override
@@ -41,7 +44,13 @@ class _WinnerCountSetupScreenState extends State<WinnerCountSetupScreen> {
     final setup = widget.buildSetup(widget.participants, _winnerCount);
     Navigator.push(
       context,
-      AppPageRoute(builder: (context) => widget.game.playScreen(context, setup)),
+      AppPageRoute(
+        builder: (context) => widget.game.playScreen(
+          context,
+          setup,
+          onResult: widget.onResult,
+        ),
+      ),
     );
   }
 

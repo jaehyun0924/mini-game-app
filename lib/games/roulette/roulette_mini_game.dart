@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:mini_game_app/models/game_setup.dart';
+import 'package:mini_game_app/models/session_result.dart';
 
 import '../mini_game.dart';
 import 'roulette_constants.dart';
@@ -26,8 +27,12 @@ class RouletteMiniGame extends MiniGame<int> {
   int get maxParticipants => kRouletteMaxParticipants;
 
   @override
-  Widget buildAfterParticipants(BuildContext context, List<String> participants) {
-    return playWithoutOutcomes(context, participants);
+  Widget buildAfterParticipants(
+    BuildContext context,
+    List<String> participants, {
+    GameResultCallback? onResult,
+  }) {
+    return playWithoutOutcomes(context, participants, onResult: onResult);
   }
 
   @override
@@ -39,10 +44,16 @@ class RouletteMiniGame extends MiniGame<int> {
   }
 
   @override
-  Widget buildPlayScreen(BuildContext context, GameSetup setup, int result) {
+  Widget buildPlayScreen(
+    BuildContext context,
+    GameSetup setup,
+    int result, {
+    GameResultCallback? onResult,
+  }) {
     return RouletteResultScreen(
       participants: setup.participants,
       winningIndex: result,
+      onResult: onResult,
     );
   }
 }
