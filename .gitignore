@@ -46,3 +46,10 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Firestore 보안 규칙 에뮬레이터 테스트 (firestore-tests/)
+firestore-tests/node_modules/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+.firebase/
