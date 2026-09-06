@@ -109,6 +109,44 @@ class GroupService {
       memberIds: [...group.memberIds, _uid],
     );
   }
+
+  /// 그룹 탈퇴. 방장은 탈퇴할 수 없다(보안 규칙 isLeavingSelf가 서버에서도
+  /// 막는다) — 방장은 [deleteGroup]으로 그룹 자체를 지워야 한다.
+  Future<void> leaveGroup(String groupId) {
+    return _groups.doc(groupId).update({
+      'memberIds': FieldValue.arrayRemove([_uid]),
+    });
+  }
+
+  /// 그룹 삭제(방장 전용, 보안 규칙에서도 방장인지 확인한다). sessions
+  /// 하위 컬렉션과 inviteCodes 문서는 그대로 남지만, 그룹 문서가 사라지면
+  /// 보안 규칙이 막아서 아무도 접근할 수 없는 고아 데이터가 된다 — 자세한
+  /// 이유는 docs/firestore-data-model.md 참고.
+  Future<void> deleteGroup(String groupId) {
+    return _groups.doc(groupId).delete();
+  }
+
+  /// 초대 코드 재발급(방장 전용). 기존 코드를 지워 더 이상 그 코드로 들어올
+  /// 수 없게 만들고, 새 코드를 그룹 문서와 inviteCodes 컬렉션에 반영한다.
+  /// 두 쓰기 다 규칙 조건이 "이미 존재하는 그룹 문서"만 참조하고 서로의
+  /// 결과를 참조하지 않으므로(그룹 생성 때와 달리 그룹 문서 자체가 새로
+  /// 생기는 게 아니라 이미 있음), WriteBatch로 묶어도 안전하다.
+  Future<String> reissueInviteCode(GroupModel group) async {
+    for (var attempt = 0; attempt < _maxCodeAttempts; attempt++) {
+      final newCode = _generateCode();
+      final existing = await _inviteCodes.doc(newCode).get();
+      if (existing.exists) continue;
+
+      final batch = FirebaseFirestore.instance.batch();
+      batch.delete(_inviteCodes.doc(group.inviteCode));
+      batch.update(_groups.doc(group.id), {'inviteCode': newCode});
+      batch.set(_inviteCodes.doc(newCode), {'groupId': group.id});
+      await batch.commit();
+
+      return newCode;
+    }
+    throw Exception('초대 코드 재발급에 실패했어요. 다시 시도해주세요');
+  }
 }
 
 class GroupJoinException implements Exception {

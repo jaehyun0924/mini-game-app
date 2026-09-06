@@ -38,6 +38,30 @@ service cloud.firestore {
           resource.data.memberIds.concat([request.auth.uid]);
     }
 
+    // 그룹 탈퇴: 이미 멤버인 사람이 memberIds에서 자기 uid 하나만 빼는 경우만
+    // 허용한다. 방장(ownerId)은 탈퇴할 수 없게 막는다 — 소유권 이전 기능이
+    // 없는 상태에서 방장이 나가버리면 아무도 그룹을 못 지우는 상태가 되기 때문에,
+    // 방장은 "탈퇴"가 아니라 "그룹 삭제"로만 그룹을 떠날 수 있게 한다.
+    function isLeavingSelf() {
+      return isSignedIn() &&
+        request.auth.uid in resource.data.memberIds &&
+        request.auth.uid != resource.data.ownerId &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberIds']) &&
+        request.resource.data.memberIds ==
+          resource.data.memberIds.removeAll([request.auth.uid]);
+    }
+
+    // 초대 코드 재발급: 방장만 inviteCode 필드 하나만 새 값으로 바꿀 수 있다.
+    // 실제 코드 문서(inviteCodes) 쪽 처리(기존 코드 삭제 + 새 코드 생성)는
+    // 별도 규칙(inviteCodes match 블록)에서 각각 검사한다.
+    function isReissuingCode() {
+      return isSignedIn() &&
+        resource.data.ownerId == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['inviteCode']) &&
+        request.resource.data.inviteCode is string &&
+        request.resource.data.inviteCode != resource.data.inviteCode;
+    }
+
     match /groups/{groupId} {
       // 그룹 생성은 로그인한 사람이면 누구나 가능하되, 만드는 사람이 곧 owner이자
       // 유일한 초기 멤버여야 한다.
@@ -51,11 +75,23 @@ service cloud.firestore {
       // 닉네임처럼 이미 로그인한 사람 전체에게 공개된 정보 수준이라 문제 없다
       // (실제 게임 기록인 sessions는 그대로 멤버만 읽을 수 있게 막아둔다).
       allow read: if isSignedIn();
-      allow update: if isMember(groupId) || isJoiningSelf();
-      allow delete: if false;
+      // update는 "가입 자신을 추가" / "탈퇴로 자신을 제거" / "방장의 코드 재발급"
+      // 세 가지 정확한 변경만 허용한다. 예전에는 멤버이기만 하면 필드 제한 없이
+      // update를 허용했는데, 그러면 아무 멤버나 그룹 이름·ownerId·memberIds를
+      // 통째로 바꿔치기할 수 있어서 이번에 좁혔다.
+      allow update: if isJoiningSelf() || isLeavingSelf() || isReissuingCode();
+      // 그룹 삭제는 방장만 가능하다. sessions 하위 컬렉션과 inviteCodes 문서는
+      // 그룹 문서와 함께 자동으로 지워지지 않고 그대로 남지만, 그룹 문서가 없으면
+      // sessions 규칙의 isMember()가 get()에서 실패해 아무도 못 읽는 고아 데이터가
+      // 되고, inviteCodes로 그 그룹에 참여를 시도해도 joinByCode()가 "존재하지
+      // 않는 그룹"으로 처리한다 — 그룹 규모가 작은 이 앱에서는 Cloud Functions로
+      // 연쇄 삭제를 따로 구현하지 않아도 되는 수준의 트레이드오프로 판단했다.
+      allow delete: if isSignedIn() && resource.data.ownerId == request.auth.uid;
 
       match /sessions/{sessionId} {
-        // 기록은 남긴 뒤에 고치거나 지우지 않는다는 전제로 update/delete는 막아둔다.
+        // 기록은 남긴 뒤에 고치거나 지우지 않는다 — 방장을 포함해 그 누구도
+        // update/delete를 할 수 없게 막아서, 진 사람이 자기 결과를 몰래
+        // 바꾸거나 지워서 내기에서 빠져나가는 걸 근본적으로 막는다.
         allow read: if isMember(groupId);
         allow create: if isMember(groupId) &&
           request.resource.data.hostId == request.auth.uid;
@@ -77,7 +113,13 @@ service cloud.firestore {
         request.resource.data.groupId is string &&
         get(/databases/$(database)/documents/groups/$(request.resource.data.groupId))
           .data.ownerId == request.auth.uid;
-      allow update, delete: if false;
+      // 코드 재발급 때 기존 코드를 무효화하려고 지운다. 이 코드가 가리키는
+      // 그룹의 방장만 지울 수 있다 — 남의 그룹 초대 코드를 지워서 못 쓰게
+      // 만드는 걸 막는다.
+      allow delete: if isSignedIn() &&
+        get(/databases/$(database)/documents/groups/$(resource.data.groupId))
+          .data.ownerId == request.auth.uid;
+      allow update: if false;
     }
 
     // 그 외 컬렉션은 아직 쓰는 곳이 없으므로 기본적으로 전부 차단.
