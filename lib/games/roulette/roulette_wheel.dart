@@ -107,15 +107,20 @@ class _RouletteWheelState extends State<RouletteWheel>
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size.infinite,
-      painter: _RouletteWheelPainter(
-        labels: widget.labels,
-        winningIndex: widget.targetSectorIndex,
-        spinBeginRotation: _spinBeginRotation,
-        spinEndRotation: _spinEndRotation,
-        spinPhaseEnd: _spinPhaseEnd,
-        controller: _controller,
+    // 스핀 중 매 프레임 텍스트 레이아웃까지 다시 계산하는 무거운 페인터라,
+    // 리페인트 범위를 이 CustomPaint 안으로 가둬서 화면의 다른 부분(AppBar,
+    // 버튼 등)까지 덩달아 다시 그려지지 않도록 한다.
+    return RepaintBoundary(
+      child: CustomPaint(
+        size: Size.infinite,
+        painter: _RouletteWheelPainter(
+          labels: widget.labels,
+          winningIndex: widget.targetSectorIndex,
+          spinBeginRotation: _spinBeginRotation,
+          spinEndRotation: _spinEndRotation,
+          spinPhaseEnd: _spinPhaseEnd,
+          controller: _controller,
+        ),
       ),
     );
   }

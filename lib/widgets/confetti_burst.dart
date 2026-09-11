@@ -53,10 +53,14 @@ class _ConfettiBurstState extends State<ConfettiBurst>
 
   @override
   Widget build(BuildContext context) {
+    // GameResultCard 위에 겹쳐지는 연출이라, 리페인트 범위를 이 안에 가둬서
+    // 카드 쪽까지 매 프레임 다시 그려지지 않도록 한다.
     return IgnorePointer(
-      child: CustomPaint(
-        size: const Size(120, 120),
-        painter: _ConfettiPainter(pieces: _pieces, animation: _controller),
+      child: RepaintBoundary(
+        child: CustomPaint(
+          size: const Size(120, 120),
+          painter: _ConfettiPainter(pieces: _pieces, animation: _controller),
+        ),
       ),
     );
   }

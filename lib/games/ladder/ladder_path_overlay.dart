@@ -67,12 +67,16 @@ class _LadderPathOverlayState extends State<LadderPathOverlay>
       return const SizedBox.expand();
     }
 
-    return CustomPaint(
-      size: Size.infinite,
-      painter: _LadderPathPainter(
-        structure: widget.structure,
-        path: widget.structure.pathFor(participant),
-        animation: _controller,
+    // LadderBoard와 마찬가지로 매 프레임 리페인트 범위를 이 위젯 안으로
+    // 가둬서 형제 위젯(사다리 본체 등)까지 다시 그려지지 않게 한다.
+    return RepaintBoundary(
+      child: CustomPaint(
+        size: Size.infinite,
+        painter: _LadderPathPainter(
+          structure: widget.structure,
+          path: widget.structure.pathFor(participant),
+          animation: _controller,
+        ),
       ),
     );
   }

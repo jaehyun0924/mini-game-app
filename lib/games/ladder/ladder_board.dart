@@ -34,9 +34,14 @@ class _LadderBoardState extends State<LadderBoard>
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size.infinite,
-      painter: _LadderPainter(widget.structure, _controller),
+    // 매 프레임 다시 그려지는 영역을 이 CustomPaint 하나로 한정해서,
+    // 같은 Stack에 겹쳐진 LadderPathOverlay 등 형제 위젯까지 덩달아
+    // 다시 그려지지 않도록 한다.
+    return RepaintBoundary(
+      child: CustomPaint(
+        size: Size.infinite,
+        painter: _LadderPainter(widget.structure, _controller),
+      ),
     );
   }
 }
